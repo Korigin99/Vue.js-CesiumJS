@@ -35,7 +35,7 @@ const MapViewer = {
         timeline: false,
         animation: false,
         toolbar: false,
-        terrainProvider: Cesium.createWorldTerrain(),
+        // terrainProvider: Cesium.createWorldTerrain(),
       });
       viewer.scene.logarithmicDepthBuffer = false;
       viewer.scene.globe.depthTestAgainstTerrain = true;

@@ -17,8 +17,13 @@
         Search
       </button>
     </form>
-    <v-btn @click="addPin">Add Pin</v-btn>
-    <v-btn @click="currentLocation">currentLocation</v-btn>
+    <v-btn @click="addPin" style="margin: 10px 0; width: 150px">Add Pin</v-btn>
+    <v-btn @click="currentLocation" style="margin: 10px 0; width: 150px"
+      >currentLocation</v-btn
+    >
+    <ul>
+      <li v-for="list in pinList" :key="list.id">{{ list.addr }}</li>
+    </ul>
   </div>
 </template>
 
@@ -37,15 +42,25 @@ var baseUrl = "http://dev.virtualearth.net/REST/v1/locationrecog/";
 
 let viewer;
 
+let idx = 0;
+let pinList = [];
+
 export default {
   data: () => ({
     return: {
       lon: "",
       lat: "",
       hei: "",
+      pinList: [],
     },
   }),
   methods: {
+    // 위도 경도 거리 공식
+    // p1.x : lon p1.y : lat
+    /* distance(p1, p2) {
+      return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    }, */
+
     ...mapGetters("MapViewer", ["getViewer"]),
     ...mapActions("MapViewer", ["initViewer"]),
 
@@ -61,6 +76,7 @@ export default {
       lat = (north - south) / 2 + south;
       console.log("위도 : " + lat);
       console.log("경도 : " + lon);
+      console.log(pinList);
     },
 
     // 위치 찾기
@@ -76,6 +92,7 @@ export default {
 
     //Add pin
     async addPin() {
+      // 현 위치 경도 위도
       var cartographic = new Cesium.Rectangle(0, 0, 0, 0);
       viewer.camera.computeViewRectangle(Cesium.Ellipsoid.WGS84, cartographic);
       var west = Number(Cesium.Math.toDegrees(cartographic.west));
@@ -84,20 +101,23 @@ export default {
       var north = Number(Cesium.Math.toDegrees(cartographic.north));
       lon = (east - west) / 2 + west;
       lat = (north - south) / 2 + south;
-      hei = cartographic.height;
 
       var url = `${baseUrl}${lat},${lon}?key=${bingMap_API_KEY}`; //bingmap url
 
       var addr = "";
 
-      // 지역명 불러오는 로직 구현
+      // 지역명 불러오기
       await this.$axios.get(url, {}).then((res) => {
-        addr = res.data.resourceSets[0].resources[0].businessesAtLocation[0].businessAddress.formattedAddress;
+        console.log(res.data);
+        addr =
+          res.data.resourceSets[0].resources[0].businessesAtLocation[0]
+            .businessAddress.formattedAddress;
       });
 
+      // 핀 표시
       const pinBuilder = new Cesium.PinBuilder();
       const locationPin = viewer.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(lon, lat),
+        position: Cesium.Cartesian3.fromDegrees(lon, lat, 20),
         label: {
           text: `${addr}`,
           verticalOrigin: Cesium.VerticalOrigin.TOP,
@@ -110,6 +130,9 @@ export default {
       Promise.all([locationPin]).then(function (pins) {
         viewer.zoomTo(pins);
       });
+
+      // pinList에 값 저장하는 로직
+      pinList.push({ id: idx++, lon: lon, lat: lat, addr: addr });
     },
   },
   mounted() {
@@ -119,9 +142,6 @@ export default {
 
     viewer.camera.flyTo({
       destination: new Cesium.Cartesian3.fromDegrees(lon, lat, hei),
-      label: {
-        text: "Philadelphia",
-      },
     });
   },
 };
@@ -141,13 +161,17 @@ export default {
 
 .locationSearch {
   z-index: 999;
-  width: 150px;
+  width: 250px;
   height: auto;
   text-align: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .locationSearch input {
-  width: 120px;
+  width: 150px;
   padding: 10px;
   margin: 10px 0;
   height: 30px;

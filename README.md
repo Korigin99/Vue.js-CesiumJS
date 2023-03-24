@@ -29,3 +29,5 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ### 환경 설정 완료
 
   - vuex를 이용해 작업 분리
+  
+  - Maker 가능

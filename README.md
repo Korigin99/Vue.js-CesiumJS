@@ -31,3 +31,5 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
   - vuex를 이용해 작업 분리
   
   - Maker 가능
+  
+  -  마우스 위치에 따른 위도 경도 추적

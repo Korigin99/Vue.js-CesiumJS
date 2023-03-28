@@ -33,3 +33,5 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
   - Maker 가능
   
   -  마우스 위치에 따른 위도 경도 추적
+  
+  - entity에 마우스 hover시 라벨 출력
